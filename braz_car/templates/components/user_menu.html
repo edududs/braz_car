@@ -1,0 +1,57 @@
+<!-- User Menu Component -->
+<div class="flex items-center space-x-4">
+  {% if user.is_authenticated %}
+    <!-- Authenticated User Menu -->
+    <div class="relative group">
+      <button class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-colors duration-200">
+        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+          <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+        </div>
+        <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      
+      <!-- Dropdown Menu -->
+      <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+        <div class="py-1">
+          <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Meu Perfil</a>
+          <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Minhas Viagens</a>
+          <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Configurações</a>
+          <hr class="my-1">
+          <a href="{% url 'users:logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sair</a>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <!-- Guest User Menu - Ícone único com dropdown -->
+    <div class="relative group">
+      <button class="flex items-center text-gray-700 hover:text-gray-900 transition-colors duration-200">
+        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+          <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+        </div>
+        <svg class="h-4 w-4 text-gray-500 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      
+      <!-- Dropdown Menu para usuários não autenticados -->
+      <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+        <div class="py-1">
+          <a href="{% url 'users:login' %}" 
+             class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+            Entrar
+          </a>
+          <a href="{% url 'users:register' %}" 
+             class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+            Cadastrar
+          </a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>

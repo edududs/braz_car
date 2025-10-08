@@ -1,0 +1,26 @@
+<!-- Main Header Component -->
+<header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+  <!-- Top Bar -->
+  <div class="bg-gray-800 h-1"></div>
+  
+  <!-- Main Navigation -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      
+      <!-- Left Section: Logo + Navigation -->
+      <div class="flex items-center space-x-8">
+        {% include 'components/logo.html' %}
+        {% include 'components/nav_items.html' %}
+      </div>
+      
+      <!-- Right Section: Search + Actions + User Menu -->
+      <div class="flex items-center space-x-4">
+        {% include 'components/search_bar.html' %}
+        {% include 'components/offer_ride_button.html' %}
+        {% include 'components/user_menu.html' %}
+        {% include 'components/mobile_menu.html' %}
+      </div>
+      
+    </div>
+  </div>
+</header>

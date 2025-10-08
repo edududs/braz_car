@@ -1,0 +1,13 @@
+<!-- Navigation Items Component -->
+<nav class="hidden md:flex items-center space-x-8">
+  <a href="{% url 'braz_car:index' %}" 
+     class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+    Carona
+  </a>
+  <a href="#" class="nav-link">
+    Ônibus
+  </a>
+  <a href="#" class="nav-link">
+    Central de Ajuda
+  </a>
+</nav>

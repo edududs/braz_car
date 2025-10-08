@@ -1,0 +1,13 @@
+{% load static %}
+<!-- Logo Component -->
+<div class="flex items-center">
+  <a href="{% url 'braz_car:index' %}" class="flex items-center space-x-2">
+    <!-- Logo Icon - Duas bolhas sobrepostas -->
+    <div class="relative">
+      <div class="w-8 h-8 bg-blue-400 rounded-full opacity-80"></div>
+      <div class="absolute top-0 left-1 w-8 h-8 bg-teal-600 rounded-full"></div>
+    </div>
+    <!-- Logo Text -->
+    <span class="text-xl font-bold text-teal-700">BrazCar</span>
+  </a>
+</div>
