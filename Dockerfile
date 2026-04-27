@@ -36,18 +36,17 @@ WORKDIR /app
 
 COPY --from=python-deps /install /usr/local
 
-COPY . .
-COPY --from=frontend-build /app/assets ./assets
+RUN useradd --create-home --shell /usr/sbin/nologin appuser
+
+COPY --chown=appuser:appuser . .
+COPY --chown=appuser:appuser --from=frontend-build /app/assets ./assets
+
+USER appuser
 
 RUN SECRET_KEY=build-only \
     DATABASE_URL=sqlite:///build.sqlite3 \
     DEBUG=false \
     python manage.py collectstatic --noinput
-
-RUN useradd --create-home --shell /usr/sbin/nologin appuser \
-    && chown -R appuser:appuser /app
-
-USER appuser
 
 EXPOSE 8000
 

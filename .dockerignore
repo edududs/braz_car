@@ -1,5 +1,6 @@
 .git/
 .claude/
+.worktrees/
 .venv/
 __pycache__/
 *.py[cod]
@@ -11,7 +12,13 @@ frontend/node_modules/
 assets/
 staticfiles/
 db.sqlite3
+build.sqlite3
+test.sqlite3
 *.sqlite3
+*.db
+.coverage
+htmlcov/
+dist/
 .env
 .env.*
 !.env.example
