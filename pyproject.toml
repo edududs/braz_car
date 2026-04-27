@@ -1,13 +1,32 @@
 [project]
 name = "brazcar"
 version = "0.1.0"
-description = "Add your description here"
+description = "Django web app for shared rides in rural DF communities"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
-    "django>=5.2.7",
+    "django>=6.0,<7.0",
+    "dj-database-url>=2.2.0",
     "django-extensions>=4.1",
     "django-vite>=3.1.0",
-    "ipython>=9.6.0",
+    "granian>=1.7.6",
     "pillow>=11.3.0",
+    "psycopg[binary]>=3.2.3",
+    "whitenoise>=6.8.2",
 ]
+
+[dependency-groups]
+dev = [
+    "ipython>=9.6.0",
+    "pyright>=1.1.405",
+    "pytest>=8.4.2",
+    "pytest-django>=4.9.0",
+    "ruff>=0.15.9",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100

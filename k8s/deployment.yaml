@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: brazcar-web
+  labels:
+    app: brazcar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: brazcar
+  template:
+    metadata:
+      labels:
+        app: brazcar
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/your-org/brazcar:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: brazcar-config
+            - secretRef:
+                name: brazcar-secret
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

@@ -1,17 +1,21 @@
 {
   "name": "brazcar",
   "version": "1.0.0",
-  "description": "",
-  "main": "vite.config.js",
+  "private": true,
+  "type": "module",
+  "packageManager": "yarn@1.22.22",
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "lint": "eslint ./frontend/src --max-warnings=0 --no-error-on-unmatched-pattern",
+    "test": "vitest run"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "vite": "^7.1.9"
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",

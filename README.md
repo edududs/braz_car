@@ -259,81 +259,167 @@ graph LR
 
 ---
 
-## 🚀 Instalação
+## 🚀 Instalação e Execução
 
 ### Pré-requisitos
 
-- **Python 3.12+** instalado
-- **Node.js 18+** e npm instalados
-- **Git** para clonar o repositório
-- **(Opcional) uv** para gerenciamento de pacotes Python
+- **Python 3.13+**
+- **Node.js 22+** e **Yarn 1.x** para desenvolvimento frontend
+- **Docker** e **Docker Compose** para rodar containerizado
+- **kubectl** para deploy em Kubernetes
+- **uv** para desenvolvimento Python local
 
-### Passo a Passo
+### Variáveis de Ambiente
 
-#### 1. Clone o Repositório
+Crie o arquivo local a partir do exemplo:
+
 ```bash
-git clone https://github.com/seu-usuario/BrazCar.git
-cd BrazCar
+cp .env.example .env
 ```
 
-#### 2. Configure o Ambiente Python
+Variáveis obrigatórias:
+
+| Variável | Uso |
+|----------|-----|
+| `SECRET_KEY` | Chave secreta do Django. Use um valor longo e aleatório em produção. |
+| `DATABASE_URL` | URL do banco. Exemplo: `postgresql://user:pass@host:5432/db`. |
+| `ALLOWED_HOSTS` | Hosts aceitos pelo Django, separados por vírgula. |
+| `CSRF_TRUSTED_ORIGINS` | Origens HTTPS confiáveis para CSRF, separadas por vírgula. |
+| `DEBUG` | `true` apenas em desenvolvimento. |
+| `RUN_MIGRATIONS` | `true` para rodar `migrate` ao iniciar o container. |
+
+### Rodar Local Sem Docker
+
+Instale dependências Python e Node:
+
 ```bash
-# Usando venv (tradicional)
-python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-# ou
-.venv\Scripts\activate  # Windows
-
-# Instalar dependências
-pip install -r requirements.txt
-
-# OU usando uv (recomendado)
-uv venv
-source .venv/bin/activate
-uv pip install -e .
+uv sync
+yarn install --frozen-lockfile
 ```
 
-#### 3. Configure o Banco de Dados
-```bash
-# Aplicar migrações
-python manage.py migrate
+Em desenvolvimento, use dois terminais:
 
-# Criar superusuário para acessar o admin
-python manage.py createsuperuser
-# Siga as instruções e forneça:
-# - Username
-# - Email
-# - CPF (11 dígitos)
-# - Phone
-# - Birth date
-# - Password
+```bash
+uv run python manage.py migrate
+uv run python manage.py runserver
 ```
 
-#### 4. Configure o Frontend
 ```bash
-# Instalar dependências do Node
-npm install
-
-# Verificar se Tailwind e Vite foram instalados
-npm list vite tailwindcss
+yarn dev
 ```
 
-#### 5. Inicie os Servidores
+Acesse:
 
-**Terminal 1: Django**
+- Aplicação: <http://localhost:8000>
+- Admin Django: <http://localhost:8000/admin>
+- Vite Dev Server: <http://localhost:5173>
+
+### Rodar Com Docker Compose
+
+Esse modo sobe a app e um Postgres local. É o caminho mais simples para validar em outro PC.
+
 ```bash
-python manage.py runserver
+cp .env.example .env
+docker compose up --build
 ```
 
-**Terminal 2: Vite**
+Acesse <http://localhost:8000>.
+
+Para criar um superusuário dentro do container:
+
 ```bash
-npm run dev
+docker compose run --rm web python manage.py createsuperuser
 ```
 
-#### 6. Acesse a Aplicação
-- **Frontend**: <http://localhost:8000>
-- **Admin Django**: <http://localhost:8000/admin>
-- **Vite Dev Server**: <http://localhost:5173>
+Para parar mantendo o volume do banco:
+
+```bash
+docker compose down
+```
+
+Para apagar também os dados locais do Postgres:
+
+```bash
+docker compose down --volumes
+```
+
+### Build Docker Manual
+
+O `Dockerfile` usa multi-stage build:
+
+- `frontend-deps`: instala dependências Node usando cache de Yarn.
+- `frontend-build`: gera os assets do Vite.
+- `python-deps`: instala dependências Python com hashes e cache de pip.
+- `runtime`: copia apenas runtime Python, código da app, assets compilados e `staticfiles`.
+
+Build da imagem:
+
+```bash
+docker build -t brazcar:local .
+```
+
+Rodar usando um Postgres externo:
+
+```bash
+docker run --rm -p 8000:8000 --env-file .env brazcar:local
+```
+
+Em produção, a imagem já inclui os assets do Vite e o `collectstatic`; não precisa subir Vite em outro container.
+
+### Deploy em Kubernetes
+
+Os manifests ficam em `k8s/` e assumem banco Postgres externo. Nesse cenário, 1 pod da app basta.
+
+1. Gere e publique a imagem:
+
+```bash
+docker build -t ghcr.io/SEU_USUARIO/brazcar:latest .
+docker push ghcr.io/SEU_USUARIO/brazcar:latest
+```
+
+2. Edite `k8s/deployment.yaml` e troque:
+
+```yaml
+image: ghcr.io/your-org/brazcar:latest
+```
+
+3. Configure domínio e CSRF em `k8s/configmap.yaml`.
+
+4. Crie o Secret real:
+
+```bash
+kubectl create secret generic brazcar-secret \
+  --from-literal=SECRET_KEY='troque-por-um-valor-longo' \
+  --from-literal=DATABASE_URL='postgresql://user:pass@host:5432/db'
+```
+
+Ou, apenas para teste, copie `k8s/secret.example.yaml`, edite os valores e aplique.
+
+5. Aplique os manifests:
+
+```bash
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+```
+
+6. Teste com port-forward:
+
+```bash
+kubectl port-forward service/brazcar-web 8000:80
+```
+
+Acesse <http://localhost:8000>.
+
+Para expor publicamente, adicione um Ingress ou configure o Service conforme o cluster usado.
+
+### Checklist Para Entregar a Outro Ambiente
+
+- Commitar `src/`, `tests/`, `frontend/`, `docs/`, `pyrightconfig.json`, `yarn.lock`, `requirements.txt`, `Dockerfile`, `.dockerignore`, `.env.example`, `docker-compose.yml`, `scripts/` e `k8s/`.
+- Nunca commitar `.env` nem secrets reais.
+- Garantir que `ALLOWED_HOSTS` contém o domínio real.
+- Garantir que `CSRF_TRUSTED_ORIGINS` contém a URL HTTPS real.
+- Usar Postgres externo em produção ou criar um Postgres separado no cluster.
 
 ---
 

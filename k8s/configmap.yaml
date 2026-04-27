@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: brazcar-config
+data:
+  DEBUG: "false"
+  ALLOWED_HOSTS: "localhost,127.0.0.1,brazcar.example.com"
+  CSRF_TRUSTED_ORIGINS: "https://brazcar.example.com"
+  PORT: "8000"
+  RUN_MIGRATIONS: "true"
