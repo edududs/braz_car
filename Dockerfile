@@ -37,6 +37,8 @@ WORKDIR /app
 COPY --from=python-deps /install /usr/local
 
 RUN useradd --create-home --shell /usr/sbin/nologin appuser
+RUN mkdir -p /app/staticfiles \
+    && chown appuser:appuser /app/staticfiles
 
 COPY --chown=appuser:appuser . .
 COPY --chown=appuser:appuser --from=frontend-build /app/assets ./assets
