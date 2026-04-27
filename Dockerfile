@@ -14,6 +14,11 @@ FROM frontend-deps AS frontend-build
 COPY vite.config.mjs ./
 COPY static ./static
 COPY frontend ./frontend
+COPY braz_car/templates ./braz_car/templates
+COPY locations/templates ./locations/templates
+COPY rides/templates ./rides/templates
+COPY users/templates ./users/templates
+COPY vehicles/templates ./vehicles/templates
 RUN yarn build
 
 
