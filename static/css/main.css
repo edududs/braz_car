@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @source "../../**/templates/**/*.html";
+@source "../../frontend/src/**/*.{ts,tsx}";
 
 /* Custom styles for BrazCar */
 @layer base {

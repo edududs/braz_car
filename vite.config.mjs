@@ -1,6 +1,6 @@
-import { defineConfig } from "vite";
 import { resolve } from "path";
 import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   base: "/static/",
@@ -10,9 +10,21 @@ export default defineConfig({
     assetsDir: "django-assets",
     rollupOptions: {
       input: {
-        test: resolve("./static/js/main.js"),
-      }
-    }
+        app: resolve("./frontend/src/main.tsx"),
+      },
+    },
   },
   plugins: [tailwindcss()],
-})
+  test: {
+    environment: "jsdom",
+    exclude: [
+      "**/node_modules/**",
+      "**/.git/**",
+      "**/.worktrees/**",
+      "**/dist/**",
+      "**/staticfiles/**",
+    ],
+    globals: true,
+    setupFiles: [resolve("./frontend/src/test/setup.ts")],
+  },
+});

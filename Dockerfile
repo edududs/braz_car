@@ -19,6 +19,7 @@ COPY locations/templates ./locations/templates
 COPY rides/templates ./rides/templates
 COPY users/templates ./users/templates
 COPY vehicles/templates ./vehicles/templates
+COPY templates ./templates
 RUN yarn build
 
 
@@ -35,6 +36,7 @@ FROM python:3.13-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    DJANGO_SETTINGS_MODULE=core.settings.production \
     PORT=8000
 
 WORKDIR /app
@@ -53,6 +55,7 @@ USER appuser
 RUN SECRET_KEY=build-only \
     DATABASE_URL=sqlite:///build.sqlite3 \
     DEBUG=false \
+    ALLOWED_HOSTS=localhost \
     python manage.py collectstatic --noinput
 
 EXPOSE 8000

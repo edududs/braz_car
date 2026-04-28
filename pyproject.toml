@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "django>=6.0,<7.0",
+    "django-ninja>=1.4.3",
     "dj-database-url>=2.2.0",
     "django-extensions>=4.1",
     "django-vite>=3.1.0",
@@ -26,6 +27,7 @@ dev = [
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+DJANGO_SETTINGS_MODULE = "core.settings.testing"
 
 [tool.ruff]
 target-version = "py313"

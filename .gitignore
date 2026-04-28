@@ -12,6 +12,11 @@ wheels/
 # Node.js dependencies
 node_modules/
 frontend/node_modules/
+.yarn/
+<<<<<<< HEAD
+=======
+.yarn/
+>>>>>>> feature/brazcar-mvp
 
 # Vite build outputs
 assets/
