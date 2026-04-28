@@ -1,11 +1,13 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include("braz_car.urls", namespace="braz_car")),
     path("users/", include("users.urls", namespace="users")),
-    path("vehicles/", include("vehicles.urls", namespace="vehicles")),
-    path("locations/", include("locations.urls", namespace="locations")),
-    path("rides/", include("rides.urls", namespace="rides")),
+    path("", include("src.brazcar.adapters.inbound.http.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

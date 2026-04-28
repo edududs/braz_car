@@ -11,10 +11,13 @@ wheels/
 
 # Node.js dependencies
 node_modules/
+frontend/node_modules/
+.yarn/
 
 # Vite build outputs
 assets/
 .vite/
+frontend/dist/
 
 # Environment variables
 .env

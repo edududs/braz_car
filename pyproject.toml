@@ -3,11 +3,32 @@ name = "brazcar"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
-    "django>=5.2.7",
+    "django>=6.0a1",
+    "dj-database-url>=2.2.0",
     "django-extensions>=4.1",
     "django-vite>=3.1.0",
+    "granian>=1.7.6",
     "ipython>=9.6.0",
     "pillow>=11.3.0",
+    "psycopg[binary]>=3.2.3",
+    "whitenoise>=6.8.2",
+    "django-ninja>=1.4.3",
 ]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.405",
+    "pytest>=8.4.2",
+    "pytest-django>=4.9.0",
+    "ruff>=0.15.9",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+DJANGO_SETTINGS_MODULE = "core.settings.testing"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100

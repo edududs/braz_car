@@ -4,8 +4,8 @@
 
 Plataforma web para centralizar e organizar caronas compartilhadas entre moradores de cidades rurais do DF e o centro de Brasília, eliminando a necessidade de múltiplos grupos de WhatsApp desorganizados.
 
-[![Django Version](https://img.shields.io/badge/Django-5.2+-green.svg)](https://www.djangoproject.com/)
-[![Python Version](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/)
+[![Django Version](https://img.shields.io/badge/Django-6.0%20alpha-green.svg)](https://www.djangoproject.com/)
+[![Python Version](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Alpha-orange.svg)](https://github.com)
 
@@ -96,90 +96,88 @@ O **BrazCar** é uma plataforma centralizada que:
 ## 🛠️ Tecnologias
 
 ### Backend
-- **Django 5.2+** - Framework web Python robusto e escalável
-- **Python 3.12+** - Linguagem moderna com recursos avançados
-- **SQLite** - Banco de dados para desenvolvimento
+- **Django 6.0 alpha** - Framework web Python robusto e escalável
+- **Python 3.13** - Linguagem moderna com recursos avançados
+- **PostgreSQL** - Banco de dados alvo para ambientes configurados via `DATABASE_URL`
+- **SQLite** - Fallback local apenas para bootstrap com `DEBUG=true`
 - **Pillow** - Processamento de imagens (fotos de perfil)
 
 ### Frontend
+- **React 19** - SPA responsável pelo dashboard e pela página pública de detalhes
+- **TypeScript 5.9** - Tipagem do frontend e testes do cliente
 - **Tailwind CSS 4.1** - Framework CSS utilitário moderno
 - **Vite 7.1** - Build tool ultra-rápido com HMR
-- **JavaScript ES6** - Interatividade moderna no frontend
-- **Django Templates** - Sistema de templates server-side
+- **React Router 7** - Roteamento do dashboard e dos detalhes de carona
 
 ### Integrações
 - **Django Vite** - Integração perfeita entre Django e Vite
 - **django-vite 3.1+** - Hot Module Replacement em desenvolvimento
 
 ### Desenvolvimento
-- **uv** - Gerenciador de pacotes Python moderno
-- **npm** - Gerenciador de pacotes JavaScript
+- **uv** - Gerenciador de pacotes Python e ambientes virtuais
+- **Yarn 1 (via Corepack)** - Gerenciador de pacotes JavaScript padronizado no repositório
 - **Git** - Controle de versão
 
 ---
 
 ## 🏗 Arquitetura
 
-### Estrutura de Apps Django
+### Fluxo atual da aplicação
 
-O projeto segue uma arquitetura modular baseada em apps Django especializados:
+O BrazCar agora serve um app shell Django mínimo em `/` e `/rides/<id>/`, enquanto a experiência principal roda em uma SPA React carregada via Vite.
 
+```text
+Request HTTP
+  -> Django URLConf (core/urls.py)
+  -> app shell / auth redirect / API Ninja
+  -> template templates/app_shell.html
+  -> frontend/src/main.tsx
+  -> React Router (dashboard e detalhe da carona)
+  -> chamadas para /api/ride-listings, /api/me e /events/ride-listings/
 ```
+
+### Estrutura relevante do repositório
+
+```text
 BrazCar/
-├── core/                    # ⚙️ Configurações Django
-│   ├── settings.py          # Configurações principais
-│   ├── urls.py              # Roteamento global
-│   └── wsgi.py              # WSGI application
-│
-├── braz_car/               # 🎨 App principal (UI/Templates)
-│   ├── templates/          # Templates base e componentes
-│   │   ├── base.html       # Template base
-│   │   ├── index.html      # Homepage
-│   │   └── components/     # Componentes reutilizáveis
-│   ├── context_processors.py
-│   └── views.py
-│
-├── users/                  # 👤 Autenticação e Usuários
-│   ├── models.py           # User (AbstractUser)
-│   ├── views.py            # Login, Logout, Registro
-│   ├── backends.py         # Autenticação multi-campo
-│   └── urls.py             # Rotas de autenticação
-│
-├── rides/                  # 🚗 Sistema de Caronas
-│   ├── models.py           # Ride, RideRequest
-│   ├── views.py            # CRUD de caronas
-│   └── urls.py             # Rotas de caronas
-│
-├── vehicles/               # 🚙 Cadastro de Veículos
-│   ├── models.py           # Vehicle
-│   └── admin.py            # Admin de veículos
-│
-├── locations/              # 📍 Localizações e Rotas
-│   ├── models.py           # Location, Address
-│   └── admin.py            # Admin de localizações
-│
-├── utils/                  # 🔧 Utilitários
-│   └── validations/        # Validações (CPF, etc)
-│
-├── static/                 # 📦 Assets Estáticos
-│   ├── css/                # Estilos (main.css)
-│   └── js/                 # JavaScript (main.js)
-│
-└── assets/                 # 🎨 Assets do Vite
-    └── (compilados)
+├── core/                             # Configurações Django e URLConf raiz
+├── users/                            # Login, logout, registro e redirects seguros para o app shell
+├── src/brazcar/adapters/inbound/http/
+│   ├── api_views.py                  # Endpoints HTTP/Ninja consumidos pelo frontend
+│   ├── page_views.py                 # Renderização do app shell
+│   ├── sse_views.py                  # SSE das listagens de carona
+│   └── urls.py                       # /, /rides/<id>/, /api e /events
+├── templates/
+│   └── app_shell.html                # HTML mínimo com data-* runtime config para a SPA
+├── frontend/
+│   └── src/
+│       ├── main.tsx                  # Entrada React/Vite
+│       ├── app/router.tsx            # Rotas do dashboard e detalhe
+│       └── features/rides/           # Dashboard, detalhe e testes do fluxo público
+├── static/
+│   └── css/main.css                  # Estilos Tailwind importados pelo entrypoint React
+└── tests/                            # Testes backend/integração da camada HTTP
 ```
 
-### Fluxo de Dados
+### Fluxo de autenticação e detalhe público
+
+- `GET /users/login/` e `GET /users/register/` não renderizam mais páginas legadas; ambos redirecionam de volta para o app shell.
+- O parâmetro `next` é validado no backend antes de qualquer redirect para preservar o fluxo público do detalhe sem abrir redirecionamento inseguro.
+- A tela `frontend/src/features/rides/pages/RideDetailPage.tsx` carrega a carona publicamente e usa `/api/me` apenas para decidir se o bloco "Ações futuras" deve aparecer.
+- Se a consulta de autenticação falhar, a página de detalhe continua pública e funcional.
+
+### Fluxo de dados
 
 ```mermaid
 graph LR
-    A[Usuário] -->|Login| B[Django Auth]
-    B -->|Autenticado| C[Dashboard]
-    C -->|Busca Carona| D[Rides App]
-    D -->|Filtra| E[Database]
-    E -->|Resultados| F[Ride Cards]
-    F -->|Candidatura| G[RideRequest]
-    G -->|Notifica| H[Motorista]
+    A[Usuário] -->|Abre / ou /rides/7| B[App shell Django]
+    B --> C[SPA React]
+    C -->|GET| D[/api/ride-listings]
+    C -->|GET| E[/api/me]
+    C -->|SSE| F[/events/ride-listings/]
+    E -->|is_authenticated| G{Mostrar ações futuras?}
+    G -->|Sim| H[Bloco autenticado no detalhe]
+    G -->|Não| I[Detalhe permanece público]
 ```
 
 ### Modelos de Dados
@@ -226,12 +224,12 @@ graph LR
 - [x] **Validação CPF**: Normalização e verificação de CPF
 
 #### Interface do Usuário
-- [x] **Menu Responsivo**: Desktop (dropdown) e Mobile (hamburger)
-- [x] **Componentes Modulares**: 8 componentes reutilizáveis
-- [x] **Design System**: Cores, tipografia e espaçamento padronizados
+- [x] **Dashboard React**: Shell renderizado pelo Django com hidratação via Vite
+- [x] **Página pública de detalhe**: `/rides/<id>/` acessível sem login
+- [x] **Ações futuras condicionais**: bloco autenticado exibido apenas quando `/api/me` retorna usuário autenticado
 - [x] **Ride Cards**: Cards de carona completos e informativos
 - [x] **Hot Reload**: Desenvolvimento ágil com Vite HMR
-- [x] **Templates Organizados**: Estrutura modular do Django
+- [x] **Runtime config no shell**: endpoints expostos via `data-*` em `#app-shell`
 
 #### Arquitetura
 - [x] **Apps Especializados**: 5 apps Django bem definidos
@@ -263,10 +261,10 @@ graph LR
 
 ### Pré-requisitos
 
-- **Python 3.12+** instalado
-- **Node.js 18+** e npm instalados
+- **Python 3.13** instalado
+- **uv** instalado para gerenciar ambiente virtual e dependências Python
+- **Node.js 18+** com **Corepack** habilitado
 - **Git** para clonar o repositório
-- **(Opcional) uv** para gerenciamento de pacotes Python
 
 ### Passo a Passo
 
@@ -278,28 +276,60 @@ cd BrazCar
 
 #### 2. Configure o Ambiente Python
 ```bash
-# Usando venv (tradicional)
-python -m venv .venv
+# Criar e ativar o ambiente virtual com uv
+uv venv --python 3.13
 source .venv/bin/activate  # Linux/Mac
 # ou
 .venv\Scripts\activate  # Windows
 
-# Instalar dependências
-pip install -r requirements.txt
-
-# OU usando uv (recomendado)
-uv venv
-source .venv/bin/activate
-uv pip install -e .
+# Instalar dependências do projeto e ferramentas de desenvolvimento
+uv sync --all-groups
 ```
 
-#### 3. Configure o Banco de Dados
+#### 3. Configure o Ambiente local
+```bash
+cp .env.example .env
+```
+
+O projeto usa um package de settings:
+- `core.settings.dev` para desenvolvimento local
+- `core.settings.testing` para pytest
+- `core.settings.production` para runtime/container
+- `core.settings` aponta para `dev` por padrão para compatibilidade local
+
+Com o `.env.example` padrão, o bootstrap local usa:
+- `DJANGO_SETTINGS_MODULE=core.settings.dev`
+- `DEBUG=true`
+- `DATABASE_URL=sqlite:///db.sqlite3`
+- `ALLOWED_HOSTS=localhost,127.0.0.1,[::1]`
+
+Em ambientes não locais, defina explicitamente:
+- `SECRET_KEY`
+- `DATABASE_URL`
+- `ALLOWED_HOSTS`
+- `CSRF_TRUSTED_ORIGINS`
+
+Nos testes, o repositório já injeta defaults seguros via `conftest.py`, então `uv run pytest` não depende de export manual de env vars.
+
+Se quiser usar Postgres localmente, edite o `.env`:
+```bash
+export DJANGO_SETTINGS_MODULE=core.settings.dev
+export DEBUG=true
+export DATABASE_URL='postgresql://user:pass@localhost:5432/brazcar'
+export ALLOWED_HOSTS='localhost,127.0.0.1,[::1]'
+```
+
+Depois carregue o arquivo no shell da sua preferência.
+
+A variável `SECRET_KEY` pode ficar ausente no fluxo local com `DEBUG=true`, mas deve existir em qualquer ambiente compartilhado ou de produção.
+
+#### 4. Configure o Banco de Dados
 ```bash
 # Aplicar migrações
-python manage.py migrate
+uv run python manage.py migrate
 
 # Criar superusuário para acessar o admin
-python manage.py createsuperuser
+uv run python manage.py createsuperuser
 # Siga as instruções e forneça:
 # - Username
 # - Email
@@ -309,28 +339,57 @@ python manage.py createsuperuser
 # - Password
 ```
 
-#### 4. Configure o Frontend
+#### 5. Configure o Frontend
 ```bash
-# Instalar dependências do Node
-npm install
+# Habilitar o Yarn padronizado pelo repositório
+corepack enable
 
-# Verificar se Tailwind e Vite foram instalados
-npm list vite tailwindcss
+# Instalar dependências do Node
+corepack yarn install
+
+# Verificar se o Yarn e o Vite estão disponíveis
+corepack yarn --version
+corepack yarn vite --version
 ```
 
-#### 5. Inicie os Servidores
+#### 6. Inicie os Servidores
 
 **Terminal 1: Django**
 ```bash
-python manage.py runserver
+uv run python manage.py runserver
 ```
 
 **Terminal 2: Vite**
 ```bash
-npm run dev
+corepack yarn dev
 ```
 
-#### 6. Acesse a Aplicação
+Se quiser forçar outro package de settings localmente:
+```bash
+DJANGO_SETTINGS_MODULE=core.settings.dev uv run python manage.py runserver
+```
+
+#### 7. Execute os testes
+
+**Backend**
+```bash
+uv run pytest
+```
+
+**Frontend**
+```bash
+corepack yarn test
+```
+
+**Checks adicionais**
+```bash
+uv run pyright
+uv run ruff check .
+corepack yarn lint
+corepack yarn build
+```
+
+#### 8. Acesse a Aplicação
 - **Frontend**: <http://localhost:8000>
 - **Admin Django**: <http://localhost:8000/admin>
 - **Vite Dev Server**: <http://localhost:5173>
@@ -339,48 +398,53 @@ npm run dev
 
 ## 💡 Como Usar
 
-### Testando o Login
+### Testando o fluxo público e autenticado
 
-1. **Acesse a página de login**
-   - Clique em "Entrar" no menu
-   - Ou vá direto para: <http://localhost:8000/users/login/>
+1. **Abra o app shell**
+   - Acesse <http://localhost:8000>
+   - O Django entrega `templates/app_shell.html` e o React assume a navegação
 
-2. **Faça login com qualquer campo**
-   - **Username**: Nome de usuário criado
-   - **Email**: seu@email.com
-   - **CPF**: 12345678900 (com ou sem pontos/traços)
-   - **Telefone**: 61912345678
+2. **Explore uma carona pública**
+   - Abra uma rota de detalhe, por exemplo: <http://localhost:8000/rides/7/>
+   - A página busca a carona em `/api/ride-listings` e continua pública mesmo sem sessão
 
-3. **Funcionalidades do Login**
-   - ✅ Validação de campos obrigatórios
-   - ✅ Mensagens de erro amigáveis
-   - ✅ Redirecionamento inteligente
-   - ✅ Design responsivo
+3. **Verifique o comportamento sensível à autenticação**
+   - Sem login, o detalhe não mostra o bloco "Ações futuras"
+   - Com `/api/me` autenticado, o detalhe exibe o placeholder de ações futuras
+   - Se o lookup de autenticação falhar, o detalhe continua público
 
-### Explorando o Site
+4. **Teste login e retorno seguro para o detalhe**
+   - Acesse <http://localhost:8000/users/login/?next=/rides/7/>
+   - O backend valida `next` e redireciona para o app shell em vez de renderizar templates legados
+   - O mesmo comportamento vale para `GET /users/register/`
 
-- **Homepage**: Veja exemplos de cards de carona
-- **Menu**: Navegue pelas seções (em desenvolvimento)
-- **Admin**: Gerencie dados via Django Admin
+### Explorando a aplicação
+
+- **Dashboard**: use a home para filtrar e navegar entre caronas
+- **Detalhe**: veja informações completas da rota, motorista, veículo e restrições
+- **Admin**: gerencie dados via Django Admin
+- **Config local**: mantenha `DEBUG=true` no shell local enquanto usar os defaults de bootstrap
 
 ---
 
 ## 🗂️ Estrutura do Projeto
 
-### Componentes Reutilizáveis
+### Superfícies principais
 
-Localização: `braz_car/templates/components/`
-
-| Componente | Descrição |
+| Superfície | Descrição |
 |-----------|-----------|
-| `header.html` | Cabeçalho principal com menu completo |
-| `logo.html` | Logo do BrazCar (duas bolhas) |
-| `nav_items.html` | Links de navegação com estado ativo |
-| `user_menu.html` | Menu dropdown do usuário (login/logout) |
-| `mobile_menu.html` | Menu hamburger para mobile |
-| `ride_card.html` | Card de carona reutilizável e completo |
-| `search_bar.html` | Barra de pesquisa com ícone |
-| `offer_ride_button.html` | Botão "Oferecer carona" |
+| `core/settings/base.py` | Configuração compartilhada entre dev/testing/production |
+| `core/settings/dev.py` | Configuração local de desenvolvimento |
+| `core/settings/testing.py` | Configuração usada pelo pytest |
+| `core/settings/production.py` | Configuração esperada pelo runtime/container |
+| `conftest.py` | Bootstrap de env vars para testes Django/pytest |
+| `.env.example` | Exemplo mínimo de variáveis para desenvolvimento e produção |
+| `templates/app_shell.html` | HTML mínimo servido pelo Django com os `data-*` usados pela SPA |
+| `frontend/src/app/router.tsx` | Rotas React para dashboard e detalhe da carona |
+| `frontend/src/features/rides/pages/RideDetailPage.tsx` | Detalhe público com lookup opcional de autenticação |
+| `frontend/src/features/rides/components/RideDetail.tsx` | Apresentação dos dados da carona e bloco autenticado |
+| `tests/adapters/inbound/test_api_views.py` | Regressões do shell, endpoints e redirects do backend |
+| `frontend/src/features/rides/__tests__/RideDetailPage.test.tsx` | Regressões do fluxo público/autenticado no detalhe |
 
 ### Sistema de Design
 
@@ -473,11 +537,11 @@ Contribuições são muito bem-vindas! Este é um projeto open-source com impact
 
 ### Áreas que Precisam de Ajuda
 
-- 🎨 **Design/UX**: Melhorias na interface
-- 💻 **Backend**: Novas funcionalidades
-- 🧪 **Testes**: Cobertura de testes
-- 📱 **Mobile**: App React Native
-- 📝 **Documentação**: Tutoriais e guias
+- Design/UX: Melhorias na interface
+- Backend: Novas funcionalidades
+- Testes: Cobertura de testes
+- Mobile: App React Native
+- Documentação: Tutoriais e guias
 
 ---
 

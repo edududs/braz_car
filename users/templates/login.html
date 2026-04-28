@@ -1,9 +1,14 @@
-{% extends "base.html" %}
-{% load static %}
-
-{% block title %}Entrar - BrazCar{% endblock %}
-
-{% block content %}
+{% load django_vite %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entrar - BrazCar</title>
+  {% vite_hmr_client %}
+  {% vite_asset 'frontend/src/main.tsx' %}
+</head>
+<body>
 <div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
   <div class="sm:mx-auto sm:w-full sm:max-w-md">
     <!-- Logo -->
@@ -184,4 +189,5 @@
     </div>
   </div>
 </div>
-{% endblock %}
+</body>
+</html>
